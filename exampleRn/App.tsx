@@ -20,9 +20,9 @@ const App = () => {
     <SafeAreaView>
       <View style={styles.container}>
         <CourierProvider
-          clientKey={CLIENT_KEY}
-          userId={USER_ID}
-          brandId={BRAND_ID}
+          clientKey={CLIENT_KEY ?? ''}
+          userId={USER_ID ?? ''}
+          brandId={BRAND_ID ?? ''}
           onNewMessage={message => {
             console.log('newMessage', message);
           }}>

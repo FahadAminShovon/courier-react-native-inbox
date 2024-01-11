@@ -1,20 +1,12 @@
-import React, {
-  useEffect,
-  useMemo,
-  useState,
-  createContext,
-  useContext,
-} from 'react';
-import { Brands, createCourierClient } from '@trycourier/client-graphql';
+import React, { useMemo, createContext, useContext } from 'react';
+import { createCourierClient } from '@trycourier/client-graphql';
 import type { Client } from 'urql';
-import { ICourierMessage, useCourier } from '@trycourier/react-provider';
+import type { ICourierMessage } from '@trycourier/react-provider';
 import { useMessageHook } from '../hooks/useMessage/MessagesStore/useMessagesHook';
-import type { MessageType } from '../hooks/useMessage/MessagesStore/Messagestypes';
 import type { BrandConfig } from './Brands/brands.types';
 import { brandInitialConfig } from './Brands/initialConfig';
 import { AllNotificationsContext } from './AllNotificationsContext';
 import { UnreadNotificationsContext } from './UnreadNotificationsContext';
-import { useBellIcon } from './BellIconContextProvider';
 
 export type Props = {
   children: JSX.Element | JSX.Element[];
@@ -38,33 +30,33 @@ const CourierContext = createContext<CourierContextType>({
   isBrandLoadingError: false,
 });
 
-const verifyAllValidProperties = (obj: BrandConfig) =>
-  Object.keys(brandInitialConfig).every(
-    (key) =>
-      Object.prototype.hasOwnProperty.call(obj, key) &&
-      Boolean(obj[key as keyof typeof brandInitialConfig])
-  );
+// const verifyAllValidProperties = (obj: BrandConfig) =>
+//   Object.keys(brandInitialConfig).every(
+//     (key) =>
+//       Object.prototype.hasOwnProperty.call(obj, key) &&
+//       Boolean(obj[key as keyof typeof brandInitialConfig])
+//   );
 
-const ImessageToMessageTypeConverter = (
-  message: ICourierMessage
-): MessageType => {
-  const convertedMessage: MessageType = {
-    content: {
-      title: message.title as string,
-      body: message.body as string,
-      trackingIds: message.data?.trackingIds ?? {},
-      blocks: message.blocks || [],
-      __typename: '',
-    },
-    id: message.data?.trackingUrl || Math.floor(Math.random() * 1e7).toString(),
-    messageId:
-      message.data?.trackingUrl || Math.floor(Math.random() * 1e7).toString(),
-    created: new Date().toISOString(),
-    read: false,
-    __typename: '',
-  };
-  return convertedMessage;
-};
+// const ImessageToMessageTypeConverter = (
+//   message: ICourierMessage
+// ): MessageType => {
+//   const convertedMessage: MessageType = {
+//     content: {
+//       title: message.title as string,
+//       body: message.body as string,
+//       trackingIds: message.data?.trackingIds ?? {},
+//       blocks: message.blocks || [],
+//       __typename: '',
+//     },
+//     id: message.data?.trackingUrl || Math.floor(Math.random() * 1e7).toString(),
+//     messageId:
+//       message.data?.trackingUrl || Math.floor(Math.random() * 1e7).toString(),
+//     created: new Date().toISOString(),
+//     read: false,
+//     __typename: '',
+//   };
+//   return convertedMessage;
+// };
 
 function CourierReactNativeProvider({
   children,
@@ -73,10 +65,10 @@ function CourierReactNativeProvider({
   brandId,
   onNewMessage,
 }: Props) {
-  const [brandConfig, setBrandsConfig] =
-    useState<BrandConfig>(brandInitialConfig);
-  const [isBrandLoading, setIsBrandLoading] = useState(true);
-  const [isBrandLoadingError, setIsBrandLoadingError] = useState(false);
+  console.log('brandId', brandId);
+  const brandConfig = brandInitialConfig;
+  const isBrandLoading = false;
+  const isBrandLoadingError = false;
 
   const {
     notificationsCount: unreadNotificationsCount,
@@ -123,10 +115,10 @@ function CourierReactNativeProvider({
     []
   );
 
-  const brandApis = Brands({ client: courierClient });
+  // const brandApis = Brands({ client: courierClient });
   // const { getMessageCount } = Messages({ client: courierClient });
-  const courier = useCourier();
-  const { nudgeBellIcon } = useBellIcon();
+  // const courier = useCourier();
+  // const { nudgeBellIcon } = useBellIcon();
 
   // const updateUnreadMessageCount = async () => {
   //   try {
@@ -139,45 +131,45 @@ function CourierReactNativeProvider({
   //   }
   // };
 
-  useEffect(() => {
-    courier.transport.intercept((message: ICourierMessage) => {
-      // converting ICourierMessage to MessageType
-      const newMessage = ImessageToMessageTypeConverter(message);
-      console.log('newMessageType', newMessage);
-      setAllNotifications([newMessage, ...allNotifications]);
-      setUnreadNotifications([newMessage, ...unreadNotifications]);
-      nudgeBellIcon();
-      setUnreadNotificationsCount((prev) => prev + 1);
-      setAllNotificationsCount((prev) => prev + 1);
-      if (typeof onNewMessage === 'function') onNewMessage(message);
-    });
-  }, [
-    JSON.stringify(allNotifications),
-    JSON.stringify(unreadNotifications),
-    unreadNotificationsCount,
-    allNotificationsCount,
-  ]);
+  // useEffect(() => {
+  //   courier.transport.intercept((message: ICourierMessage) => {
+  //     // converting ICourierMessage to MessageType
+  //     const newMessage = ImessageToMessageTypeConverter(message);
+  //     console.log('newMessageType', newMessage);
+  //     setAllNotifications([newMessage, ...allNotifications]);
+  //     setUnreadNotifications([newMessage, ...unreadNotifications]);
+  //     nudgeBellIcon();
+  //     setUnreadNotificationsCount((prev) => prev + 1);
+  //     setAllNotificationsCount((prev) => prev + 1);
+  //     if (typeof onNewMessage === 'function') onNewMessage(message);
+  //   });
+  // }, [
+  //   JSON.stringify(allNotifications),
+  //   JSON.stringify(unreadNotifications),
+  //   unreadNotificationsCount,
+  //   allNotificationsCount,
+  // ]);
 
-  useEffect(() => {
-    const getBrands = async () => {
-      setIsBrandLoading(true);
-      try {
-        const brands = await brandApis.getBrand(brandId);
-        if (!brands || !verifyAllValidProperties(brands)) {
-          throw new Error('Invalid brand value');
-        }
-        const typedBrands: BrandConfig = brands;
-        setBrandsConfig(typedBrands);
-      } catch (err) {
-        console.log({ err });
-        setIsBrandLoadingError(true);
-      } finally {
-        setIsBrandLoading(false);
-      }
-    };
-    getBrands();
-    // updateUnreadMessageCount();
-  }, []);
+  // useEffect(() => {
+  //   const getBrands = async () => {
+  //     setIsBrandLoading(true);
+  //     try {
+  //       const brands = await brandApis.getBrand(brandId);
+  //       if (!brands || !verifyAllValidProperties(brands)) {
+  //         throw new Error('Invalid brand value');
+  //       }
+  //       const typedBrands: BrandConfig = brands;
+  //       setBrandsConfig(typedBrands);
+  //     } catch (err) {
+  //       console.log({ err });
+  //       setIsBrandLoadingError(true);
+  //     } finally {
+  //       setIsBrandLoading(false);
+  //     }
+  //   };
+  //   getBrands();
+  //   // updateUnreadMessageCount();
+  // }, []);
 
   return (
     <UnreadNotificationsContext.Provider
