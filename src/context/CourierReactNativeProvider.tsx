@@ -5,11 +5,7 @@ import React, {
   createContext,
   useContext,
 } from 'react';
-import {
-  Brands,
-  createCourierClient,
-  Messages,
-} from '@trycourier/client-graphql';
+import { Brands, createCourierClient } from '@trycourier/client-graphql';
 import type { Client } from 'urql';
 import { ICourierMessage, useCourier } from '@trycourier/react-provider';
 import { useMessageHook } from '../hooks/useMessage/MessagesStore/useMessagesHook';
@@ -128,20 +124,20 @@ function CourierReactNativeProvider({
   );
 
   const brandApis = Brands({ client: courierClient });
-  const { getMessageCount } = Messages({ client: courierClient });
+  // const { getMessageCount } = Messages({ client: courierClient });
   const courier = useCourier();
   const { nudgeBellIcon } = useBellIcon();
 
-  const updateUnreadMessageCount = async () => {
-    try {
-      const updatedUnreadMessageCount = await getMessageCount({
-        isRead: false,
-      });
-      setUnreadNotificationsCount(updatedUnreadMessageCount);
-    } catch (e) {
-      console.error({ e });
-    }
-  };
+  // const updateUnreadMessageCount = async () => {
+  //   try {
+  //     // const updatedUnreadMessageCount = await getMessageCount({
+  //       isRead: false,
+  //     });
+  //     setUnreadNotificationsCount(updatedUnreadMessageCount);
+  //   } catch (e) {
+  //     console.error({ e });
+  //   }
+  // };
 
   useEffect(() => {
     courier.transport.intercept((message: ICourierMessage) => {
@@ -180,7 +176,7 @@ function CourierReactNativeProvider({
       }
     };
     getBrands();
-    updateUnreadMessageCount();
+    // updateUnreadMessageCount();
   }, []);
 
   return (

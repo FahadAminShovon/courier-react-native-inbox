@@ -97,6 +97,7 @@ function BellIcon({ size = 'md', showUnreadMessageCount, render }: PropType) {
             position: 'absolute',
             right: dotRight,
             top: dotTop,
+            borderRadius: dotSize / 2,
           }}
           value={unreadNotificationsCount}
           showNumber={showUnreadMessageCount}
